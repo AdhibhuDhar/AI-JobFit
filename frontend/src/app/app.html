@@ -1,0 +1,17 @@
+<header class="app-bar">
+  <a class="brand" routerLink="/profile">AI <span>JobFit</span></a>
+
+  <nav>
+    <a routerLink="/profile" routerLinkActive="active">Profile</a>
+    <a routerLink="/discover" routerLinkActive="active">Find openings</a>
+    <a routerLink="/jobs" routerLinkActive="active">Your jobs</a>
+  </nav>
+
+  @if (badge(); as b) {
+    <span class="badge badge-bad" title="The backend is reporting a problem">{{ b }}</span>
+  }
+</header>
+
+<main>
+  <router-outlet />
+</main>

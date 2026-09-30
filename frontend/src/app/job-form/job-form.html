@@ -1,0 +1,8 @@
+<h2>Add Job</h2>
+<form (ngSubmit)="submit()">
+  <input [(ngModel)]="job.company" name="company" placeholder="Company" required />
+  <input [(ngModel)]="job.role" name="role" placeholder="Role" required />
+  <input [(ngModel)]="job.ctc" name="ctc" placeholder="CTC" />
+  <textarea [(ngModel)]="job.description" name="description" placeholder="Job description" required></textarea>
+  <button type="submit">Add</button>
+</form>

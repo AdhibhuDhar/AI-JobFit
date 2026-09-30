@@ -1,0 +1,143 @@
+<section class="view">
+  <header class="view-head">
+    <h1>Find openings</h1>
+    <p class="muted">Search real job boards, or paste a posting you found elsewhere.</p>
+  </header>
+
+  @if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  }
+  @if (pasteNotice()) {
+    <p class="alert alert-ok" role="status">{{ pasteNotice() }}</p>
+  }
+
+  <div class="tabs">
+    <button class="tab" [class.active]="tab() === 'discover'" (click)="tab.set('discover')">
+      Search job boards
+    </button>
+    <button class="tab" [class.active]="tab() === 'paste'" (click)="tab.set('paste')">
+      Paste a job
+    </button>
+  </div>
+
+  @if (tab() === 'discover') {
+    <div class="card">
+      <h2>Search public job boards</h2>
+      <p class="muted">
+        Pulls live openings from Arbeitnow and Remotive, keeps the software ones,
+        and scores them against your uploaded resume.
+      </p>
+
+      <div class="row">
+        <label class="field">
+          <span>How many</span>
+          <input type="number" min="1" max="50" [(ngModel)]="limit" />
+        </label>
+        <button class="btn btn-primary align-end" (click)="findOpenings()" [disabled]="busy()">
+          {{ busy() ? 'Searching…' : 'Find openings' }}
+        </button>
+      </div>
+
+      @if (busy()) {
+        <p class="muted small">Contacting job boards and scoring with AI. This can take up to a minute.</p>
+      }
+    </div>
+
+    @if (result(); as r) {
+      <div class="card">
+        <h2>Results</h2>
+        <p class="muted small">
+          Fetched {{ r.stats.fetched }} · {{ r.stats.unique }} unique · kept
+          {{ r.stats.relevant }} software roles · {{ r.stats.tookMs }} ms
+        </p>
+
+        <ul class="source-list">
+          @for (s of r.sources | keyvalue; track s.key) {
+            <li class="badge" [class.badge-ok]="s.value.ok" [class.badge-bad]="!s.value.ok">
+              {{ sourceName(s.key) }}: {{ s.value.ok ? s.value.kept + ' kept' : s.value.error }}
+            </li>
+          }
+        </ul>
+
+        @if (r.needsProfile) {
+          <p class="alert alert-warn">
+            No resume uploaded, so these jobs were not scored. Upload one on the
+            Profile tab to get match scores.
+          </p>
+        }
+
+        @if (r.created === 0 && r.skipped > 0) {
+          <p class="muted">All of these are already in your list — nothing new added.</p>
+        }
+
+        <p class="muted small">
+          Added {{ r.created }} new, skipped {{ r.skipped }} already tracked, scored
+          {{ r.scoredSucceeded }} successfully
+          @if (r.scoredFailed) { ({{ r.scoredFailed }} failed) }
+          @if (r.scoringCapped) { · more were found than were scored this round }
+        </p>
+
+        <button class="btn" (click)="goToJobs()">View scored jobs →</button>
+      </div>
+    }
+  } @else {
+    <div class="card">
+      <h2>Paste a job</h2>
+
+      <div class="tabs tabs-sm">
+        <button class="tab" [class.active]="pasteMode() === 'url'" (click)="pasteMode.set('url')">
+          From a link
+        </button>
+        <button class="tab" [class.active]="pasteMode() === 'text'" (click)="pasteMode.set('text')">
+          Paste the description
+        </button>
+      </div>
+
+      @if (pasteError()) {
+        <p class="alert alert-error" role="alert">{{ pasteError() }}</p>
+      }
+
+      @if (pasteMode() === 'url') {
+        <p class="muted small">
+          The page is fetched server-side. Sites that render with JavaScript return
+          no text — use the description tab for those.
+        </p>
+        <label class="field">
+          <span>Job posting URL</span>
+          <input type="url" [(ngModel)]="url" placeholder="https://…" />
+        </label>
+        <button class="btn btn-primary" (click)="addFromUrl()" [disabled]="pasteBusy()">
+          {{ pasteBusy() ? 'Fetching…' : 'Add from link' }}
+        </button>
+      } @else {
+        <div class="row">
+          <label class="field">
+            <span>Company</span>
+            <input type="text" [(ngModel)]="company" placeholder="Acme Corp" />
+          </label>
+          <label class="field">
+            <span>Role</span>
+            <input type="text" [(ngModel)]="role" placeholder="Backend Engineer" />
+          </label>
+          <label class="field">
+            <span>Location</span>
+            <input type="text" [(ngModel)]="location" placeholder="Remote" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Job description</span>
+          <textarea
+            rows="10"
+            [(ngModel)]="description"
+            placeholder="Paste the full posting text here…"
+          ></textarea>
+        </label>
+
+        <button class="btn btn-primary" (click)="addFromText()" [disabled]="pasteBusy()">
+          {{ pasteBusy() ? 'Analyzing…' : 'Add and analyze' }}
+        </button>
+      }
+    </div>
+  }
+</section>

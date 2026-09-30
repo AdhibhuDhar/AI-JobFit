@@ -1,0 +1,31 @@
+.upload-card {
+  border-style: dashed;
+}
+
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.file-label:hover {
+  border-color: var(--accent);
+}
+
+.file-label input {
+  display: none;
+}
+
+.profile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}

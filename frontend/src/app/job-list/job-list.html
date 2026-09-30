@@ -1,0 +1,47 @@
+<h2>My Applications</h2>
+
+<div *ngFor="let job of jobs" class="job-card">
+  <h3>{{ job.role }} - {{ job.company }}</h3>
+  <p>
+    CTC: {{ job.ctc || 'N/A' }}
+    | Status:
+    <select class="status-select" (change)="updateStatus(job._id, $event)">
+      <option value="applied" [selected]="job.status === 'applied'">Applied</option>
+      <option value="interview" [selected]="job.status === 'interview'">Interview</option>
+      <option value="offer" [selected]="job.status === 'offer'">Offer</option>
+      <option value="rejected" [selected]="job.status === 'rejected'">Rejected</option>
+    </select>
+  </p>
+
+  <button (click)="analyze(job._id)" [disabled]="analyzingId === job._id">
+    {{ analyzingId === job._id ? 'Analyzing...' : 'Analyze fit' }}
+  </button>
+  <button (click)="remove(job._id)">Delete</button>
+
+  <div *ngIf="job.analysis && job.analysis.matchScore" class="analysis">
+    <p><strong>Match score:</strong> {{ job.analysis.matchScore }}%</p>
+
+    <p><strong>Strengths</strong></p>
+    <ul>
+      <li *ngFor="let s of job.analysis.strengths">{{ s }}</li>
+    </ul>
+
+    <p><strong>Gaps</strong></p>
+    <ul>
+      <li *ngFor="let w of job.analysis.weaknesses">{{ w }}</li>
+    </ul>
+
+    <p><strong>Preparation plan</strong></p>
+    <div *ngFor="let day of job.analysis.preparationPlan" class="day-block">
+      <strong>Day {{ day.day }}</strong>
+      <ul>
+        <li *ngFor="let t of day.tasks">
+          {{ t.text }}
+          <a [href]="t.resourceUrl" target="_blank" rel="noopener" class="resource-link">
+            [{{ t.resourceLabel }}]
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

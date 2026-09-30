@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Environment — backend/.env holds GEMINI_API_KEY and MONGO_URI.
+# Ignored everywhere, not just here: a root-only rule would not stop
+# `git add backend/.env` from a subdirectory, and there are per-package
+# .gitignore files that could otherwise widen the surface.
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+frontend/dist/
+frontend/.angular/
+frontend/out-tsc/
+backend/tmp/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Test output
+coverage/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.history/
+
+# Angular / TS
+*.tsbuildinfo

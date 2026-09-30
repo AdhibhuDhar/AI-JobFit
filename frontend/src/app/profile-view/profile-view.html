@@ -1,0 +1,104 @@
+<section class="view">
+  <header class="view-head">
+    <h1>Your profile</h1>
+    <p class="muted">
+      Every match score on this site is computed from this profile. Uploading a new
+      one replaces it and marks all previous scores as out of date.
+    </p>
+  </header>
+
+  @if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="alert alert-ok" role="status">{{ notice() }}</p>
+  }
+
+  <div class="card upload-card">
+    <h2>Upload your resume</h2>
+    <p class="muted">PDF or .docx, up to 5 MB. The text is extracted and turned into a skills list.</p>
+
+    <label class="file-label">
+      <input
+        type="file"
+        accept=".pdf,.docx,application/pdf"
+        (change)="onFile($event)"
+        [disabled]="uploading()"
+      />
+      <span>{{ uploading() ? 'Reading resume…' : 'Choose a file' }}</span>
+    </label>
+
+    @if (uploading()) {
+      <p class="muted small">This takes a few seconds — the AI is reading your resume.</p>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="muted">Loading profile…</p>
+  } @else if (profile(); as p) {
+    @if (p.source === 'fallback') {
+      <p class="alert alert-warn">
+        No resume uploaded yet. Scores are currently being computed against a
+        placeholder profile, so they are not meaningful. Upload a resume to fix this.
+      </p>
+    }
+
+    <div class="card profile-card">
+      <div class="profile-head">
+        <h2>{{ p.resumeFileName || 'Placeholder profile' }}</h2>
+        @if (p.updatedAt) {
+          <span class="muted small">Updated {{ p.updatedAt | date: 'medium' }}</span>
+        }
+      </div>
+
+      <h3>Skills</h3>
+      @if (p.skills?.length) {
+        <ul class="chips">
+          @for (s of p.skills; track s) {
+            <li class="chip">{{ s }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">No skills found.</p>
+      }
+
+      @if (p.totalExperienceYears) {
+        <p class="muted">{{ p.totalExperienceYears }} year(s) of experience</p>
+      }
+
+      @if (p.experience) {
+        <h3>Background</h3>
+        <p>{{ p.experience }}</p>
+      }
+
+      @if (p.projects?.length) {
+        <h3>Projects</h3>
+        <ul>
+          @for (proj of p.projects; track proj) {
+            <li>{{ proj }}</li>
+          }
+        </ul>
+      }
+
+      @if (p.education?.length) {
+        <h3>Education</h3>
+        <ul>
+          @for (e of p.education; track e) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="card">
+      <h2>Refresh match scores</h2>
+      <p class="muted">
+        Re-runs the analysis for any job that was never scored, or was scored against
+        an older version of this profile.
+      </p>
+      <button class="btn btn-primary" (click)="refreshScores()" [disabled]="refreshing() || uploading()">
+        {{ refreshing() ? 'Re-scoring…' : 'Re-score my jobs' }}
+      </button>
+    </div>
+  }
+</section>

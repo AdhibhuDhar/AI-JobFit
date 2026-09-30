@@ -1,0 +1,8 @@
+# Secrets — this file holds GEMINI_API_KEY. Never commit it.
+.env
+.env.*
+!.env.example
+
+node_modules/
+tmp/
+*.log

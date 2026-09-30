@@ -1,0 +1,164 @@
+<section class="view">
+  <header class="view-head">
+    <h1>Your jobs</h1>
+    <p class="muted">Match scores, gaps, and what to work on before the interview.</p>
+  </header>
+
+  @if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (profile(); as p) {
+    @if (p.source === 'fallback') {
+      <p class="alert alert-warn">
+        No resume uploaded — these scores are computed against a placeholder profile
+        and are not meaningful. <a routerLink="/profile">Upload your resume</a>.
+      </p>
+    }
+  }
+
+  @if (loading()) {
+    <p class="muted">Loading jobs…</p>
+  } @else if (!jobs().length) {
+    <div class="card">
+      <p class="muted">No jobs yet.</p>
+      <a class="btn btn-primary" routerLink="/discover">Find openings →</a>
+    </div>
+  } @else {
+    @for (job of jobs(); track job._id) {
+      <article class="card job-card">
+        <div class="job-head">
+          <div>
+            <h2>{{ job.role }}</h2>
+            <p class="muted">
+              {{ job.company }}
+              @if (job.location) { · {{ job.location }} }
+              · <span class="badge">{{ sourceLabel(job.source) }}</span>
+            </p>
+          </div>
+
+          <div class="score" [class]="'score score-' + band(job)">
+            @if (job.analysis?.matchScore !== undefined) {
+              <span class="score-num">{{ job.analysis.matchScore }}</span>
+              <span class="score-label">match</span>
+            } @else {
+              <span class="score-num">–</span>
+              <span class="score-label">not scored</span>
+            }
+          </div>
+        </div>
+
+        @if (job.analysis?.matchScore !== undefined) {
+          <div class="meter" [class]="'meter meter-' + band(job)">
+            <div class="meter-fill" [style.width.%]="job.analysis.matchScore"></div>
+          </div>
+        }
+
+        @if (isStale(job)) {
+          <p class="alert alert-warn small">
+            Scored against an older version of your resume.
+            <a routerLink="/profile">Re-score</a>.
+          </p>
+        }
+
+        <div class="job-actions">
+          <button class="btn btn-primary btn-sm" (click)="analyze(job)" [disabled]="isAnalyzing(job._id!)">
+            {{ isAnalyzing(job._id!) ? 'Analyzing…' : job.analysis ? 'Re-analyze' : 'Analyze fit' }}
+          </button>
+
+          <select [value]="job.status" (change)="setStatus(job, $any($event.target).value)" [disabled]="!job.status">
+            @for (s of statusOptions; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+
+          @if (job.url) {
+            <a class="btn btn-sm" [href]="job.url" target="_blank" rel="noopener noreferrer">View posting ↗</a>
+          }
+
+          <button class="btn btn-sm btn-danger" (click)="remove(job)">Delete</button>
+        </div>
+
+        @if (job.analysis) {
+          <button class="btn btn-sm btn-ghost" (click)="toggle(job._id!)">
+            {{ isExpanded(job._id!) ? 'Hide analysis' : 'Show analysis' }}
+          </button>
+
+          @if (isExpanded(job._id!)) {
+            <div class="analysis">
+              @if (job.analysis.strengths?.length) {
+                <div class="analysis-col">
+                  <h3 class="good">Strengths</h3>
+                  <ul>
+                    @for (s of job.analysis.strengths; track s) {
+                      <li>{{ s }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              @if (job.analysis.weaknesses?.length) {
+                <div class="analysis-col">
+                  <h3 class="bad">What you're missing</h3>
+                  <ul>
+                    @for (w of job.analysis.weaknesses; track w) {
+                      <li>{{ w }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+
+            @if (job.analysis.suggestions?.length) {
+              <h3>Suggestions</h3>
+              <ul class="suggestions">
+                @for (s of job.analysis.suggestions; track s.why) {
+                  <li>
+                    <span class="badge badge-prio">{{ s.priority }}</span>
+                    <span>{{ s.why }}</span>
+                    @if (s.resourceUrl) {
+                      <a [href]="s.resourceUrl" target="_blank" rel="noopener noreferrer">{{ s.resourceLabel }} ↗</a>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (job.analysis.preparationPlan?.length) {
+              <h3>Preparation plan</h3>
+              @for (day of job.analysis.preparationPlan; track day.day) {
+                <div class="day">
+                  <h4>Day {{ day.day }}</h4>
+                  @for (task of day.tasks; track task.text) {
+                    <div class="task">
+                      <p class="task-text">{{ task.text }}</p>
+
+                      @if (task.resourceUrl) {
+                        <p class="task-topic">
+                          <a [href]="task.resourceUrl" target="_blank" rel="noopener noreferrer">
+                            {{ task.resourceLabel }} ↗
+                          </a>
+                        </p>
+                      }
+
+                      @if (task.problems?.length) {
+                        <ul class="problems">
+                          @for (p of task.problems; track p.url) {
+                            <li>
+                              <a [href]="p.url" target="_blank" rel="noopener noreferrer">{{ p.title }} ↗</a>
+                              <span class="diff" [class]="'diff diff-' + p.difficulty.toLowerCase()">{{ p.difficulty }}</span>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          }
+        }
+      </article>
+    }
+  }
+</section>
