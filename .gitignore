@@ -35,3 +35,6 @@ Thumbs.db
 
 # Angular / TS
 *.tsbuildinfo
+
+# Vercel CLI link metadata (added by `vercel link`)
+.vercel
